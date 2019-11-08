@@ -1,0 +1,15 @@
+spring-cloud-common 存放和业务无关的微服务，比如配置中心，服务注册中心，网关路由，链路数据中心等；
+bank-all 存放和业务相关的微服务，目前仅仅创建了两个，bank-account和bank-user，仅仅是为了演示SpringCloud的RPC使用形式；
+
+spring-cloud-config：配置中心，其关联配置配置管理器，比如git，svn，本地文件等。我这里使用的是git管理配置的形式。我指定了配置文件的位置是当前项目在git上的profile目录及其子目录，这样不同微服务会根据 “spring.application.name-profile.yml/properties” 的文件名称格式从配置中心拉取相应的配置信息。配置中心就从关联的git上获取指定名称的资源文件，然后提取内容返回给微服务。
+spring-cloud-eureka：服务注册中心，可以集群部署，集群配置信息放在配置中心上。启动配置中心后，多次启动eureka服务，如果在一台电脑上，需要配置不同的端口。
+spring-cloud-zuul：网关路由，所有后端服务的前门，负责http请求的认证，鉴权，路由，灰度等等。
+spring-cloud-zipkin：链路数据中心，通过seluth收集微服务的调用链路数据，在UI上展示，可定制埋点数据和查询API。
+bank-user：业务微服务应用之一，可集群部署
+bank-account：业务微服务应用之一，可集群部署
+如果想要将这两个项目clone过去，跑起来的话需要做如下修改：
+
+修改bank-account，bank-user，spring-cloud-zipkin的数据源配置，也就是数据库配置信息，配置成你自己的数据库地址，用户名，密码，驱动信息。
+在你的数据库里中兴spring-cloud-common应用 的profile/sql文件夹下的sql，生成相应表，包括bank-account，bank-user，zipkin的链路数据表。
+启动顺序spring-cloud-config > spring-cloud-eureka > spring-cloud-zipkin > spring-cloud-zuul > bank-account > bank-user
+在启动完所有微服务后，请求url：http://localhost:8889/bu/bank/user/15/account，(如果数据库没有数据，自己造两条，比如造一条userId = 15的数据)，然后访问 http://localhost:9411/zipkin/ 应该就能看到调用的链路信息，同时数据库里也会存储链路数据。
